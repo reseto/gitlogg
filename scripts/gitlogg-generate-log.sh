@@ -7,9 +7,18 @@ source "colors.sh"
 
 cd ..
 
+# show how to use this script
+show_help() {
+  echo "${initialMessage} Usage: npm run gitlogg <path to your repositories>"
+  echo " Example: npm run gitlogg ~/repositories"
+  exit 1
+}
+
 # define the absolute path to the directory that contains all your repositories.
-yourroot='/Users/reseto/git/'
-yourpath="${yourroot}data-services/"
+yourpath=$1
+if [ -z "$1" ]; then
+  show_help
+fi
 
 # define temporary 'git log' output file that will be parsed to 'json'
 # these are hardcoded in gitlogg-parse-json.js companion file
@@ -44,7 +53,6 @@ esac
 
 # 'thepath' sets the path to each repository under 'yourpath' (the trailing asterix [*/] represents all the repository folders).
 thepath="${yourpathSanitized}*/"
-
 
 # function to trim whitespace
 trim() {
@@ -100,7 +108,7 @@ if [ -d "${yourpathSanitized}" ] && [ "$(ls $yourpathSanitized)" ]; then
         )
     done > "${tempOutputFile}" ### outfile
     echo -e "\n ${Gre}The file ${Blu}${outfile} ${Gre}generated in${RCol}: ${SECONDS}s" &&
-    babel "${jsonParser}" | node     
+    node ${jsonParser}       
     json2csv -i "${tempJsonFile}" -f repository,commit_hash,author_name,author_email,date_iso_8601,date_year,date_month_number,stats,impact,subject_sanitized -o "${tempCsvFile}"
     cp "${tempJsonFile}" "${yourpathSanitized}gitlogg.json" 
     cp "${tempCsvFile}" "${yourpathSanitized}gitlogg.csv" 
